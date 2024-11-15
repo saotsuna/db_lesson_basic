@@ -7,6 +7,27 @@ create table departments (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+修正箇所
+
+INT
+-- 整数値に使用するintegerの略。扱える範囲が決まっていてそれを超えるとエラーになる。
+
+unsigned
+-- intのような整数型は正の数と負の数を扱うことができる。データ型の後に UNSIGNED を付けると 0 と正の数しか格納できなくなる。
+
+AUTO_INCREMENT
+-- カラムの値を指定せずにレコード作成した場合、デフォルトの列数を自動で一意の連続的な数値を生成する
+
+PRIMARY KEY
+-- 主キー制約。値の重複を許可しない。また、NULL(何も入っていない空っぽの状態）を入れることができない
+
+NOT NULL
+-- NULLが保存できないようにする
+
+上記テーブル内で自動で値が入るのは、`department_id` `created_at` `updated_at`
+　AUTO_INCREMENTがあるので、`department_id`を指定せずにレコードを追加すると自動で１から順番に入る。
+`created_at` `updated_at`は、DEFAULT（初期値）があるので、何も指定せずにデータを入れると自動的に入力される。CURRENT_TIMESTAMPとは、現在時効のこと。
+
 Q2
 ALTER TABLE people MODIFY department_id text after email ;
 -- ←emailがdepartment_id の上に来るよう指定。
@@ -52,15 +73,41 @@ insert into reports (person_id, content)
     (19, 'エンジニアになる為の勉強をした。'),
     (20, '彼女と誕生日祝いに旅行計画してる。');
 
+修正箇所　
+
+peopleテーブルで、手動で値を入れる必要のあるカラム
+name,email,department_id,age,gender,の５つのカラムは、手動で値を入れる必要がある。
+
+
 Q4
-UPDATE people SET department_id = '2' where person_id 2;
+UPDATE people SET department_id = '2' where person_id = 2;
 -- レコードの更新や修正時にupdate テーブル　set カラム＝値；を使用。
+
+修正箇所
+上記構文の where person_id = 2;の=が抜けておりました。これで問題なく実行できます。
 
 Q5
 SELECT * FROM people WHERE gender = 1 ORDER BY age DESC;
 -- 昇順に並び替えて表示。
 -- SELECT * FROM people ORDER BY age DESC;　←年齢の降順で並べる。　ASC で昇順になる。何も指定しないとデフォルトは、昇順。
 -- SELECT * FROM people WHERE gender = 1;  ←性別絞って習得
+
+修正箇所
+問題内容　年齢の降順で男性の名前と年齢を取得してください。
+
+SELECT *
+-- 全てのカラムを表示
+FROM people
+-- peopleテーブルから
+WHERE gender = 1
+-- 表示するレコードの条件がgender = 1
+ORDER BY age
+-- 年齢を並び替える
+DESC;
+-- 降順に
+指定の名前のカラムが抜けているので、
+ SELECT * FROM people WHERE name or gender = 1 ORDER BY age DESC;
+ 表示条件としてnameを追加したこの構文が正しい。
 
 Q6
 SELECT
@@ -123,3 +170,24 @@ where content is null ;
 -- left outer join reports r
 -- using
 -- where person_id >= 7 (person_id);←７以上を表すので指定通りに可能ではあるが、これだと付け加えるか変更した際に対応できない。
+
+修正箇所
+問題内容　日報を一つも提出していない人の名前一覧を取得してください。
+
+SELECT p.person_id, p.name, r.content
+-- peopleテーブルのperson_idとnameとreportsテーブルのcontentを表示
+FROM people p　left outer join reports r
+-- fromで指定したpeople pがleft,joinで結合したいreports rが、right
+using (person_id)
+-- 結合条件で使用するカラムが、person_id
+where content is null ;
+-- contentが何もないかどうか確かめる
+
+
+SELECT p.name,r.person_id
+FROM people p
+left outer join reports r
+using (person_id)
+where content is null ;
+-- 上記が修正構文。余計な文章表示がなくなり、提出していない名前のみ表示。r.person_idは、結合条件に必須。なければエラーになるので必要と判断しました。
+
