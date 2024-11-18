@@ -191,3 +191,9 @@ using (person_id)
 where content is null ;
 -- 上記が修正構文。余計な文章表示がなくなり、提出していない名前のみ表示。r.person_idは、結合条件に必須。なければエラーになるので必要と判断しました。
 
+SELECT p.name
+FROM people p
+left outer join reports r
+using (person_id)
+where content is null ;
+
